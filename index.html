@@ -745,7 +745,7 @@
             .whatsapp-btn { padding: 16px; font-size: 18px; }
         }
 
-        /* مودال إدخال كلمة السر */
+        /* مودال إدخال كلمة السر (تم إضافة div للرسالة) */
         .modal {
             display: none;
             position: fixed;
@@ -803,25 +803,11 @@
             margin-top: 10px;
             font-size: 0.9rem;
         }
-        /* رسالة النجاح المؤقتة */
-        .toast-success {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #2EBd6B;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 50px;
+        /* رسالة النجاح داخل المودال */
+        .modal-success {
+            color: #2EBd6B;
+            margin: 10px 0;
             font-weight: bold;
-            z-index: 1001;
-            box-shadow: 0 0 15px rgba(46,189,107,0.5);
-            animation: fadeOut 3s forwards;
-        }
-        @keyframes fadeOut {
-            0% { opacity: 1; }
-            70% { opacity: 1; }
-            100% { opacity: 0; visibility: hidden; }
         }
     </style>
 </head>
@@ -930,7 +916,7 @@
         </div>
     </div>
 
-    <!-- ================= صفحة التوصيات المحمية (الجديدة - بدون الجملة المذكورة) ================= -->
+    <!-- ================= صفحة التوصيات المحمية (الجديدة) ================= -->
     <div id="page-protected" class="page page-protected">
         <div class="content-wrapper">
             <h1>توصيات للتداول الفوري</h1>
@@ -1037,9 +1023,13 @@
                         </div>
                         <div class="wallet-info">
                             <div class="wallet-details">
-                                <div class="wallet-label"><i class="fas fa-coins"></i> العملة:</div>
+                                <div class="wallet-label">
+                                    <i class="fas fa-coins"></i> العملة:
+                                </div>
                                 <div class="wallet-value">USDT</div>
-                                <div class="wallet-label"><i class="fas fa-network-wired"></i> الشبكة:</div>
+                                <div class="wallet-label">
+                                    <i class="fas fa-network-wired"></i> الشبكة:
+                                </div>
                                 <div class="wallet-value">Tron (TRC20)</div>
                             </div>
                             <div class="wallet-warning">
@@ -1077,11 +1067,12 @@
     </div>
 </div>
 
-<!-- مودال إدخال كلمة السر -->
+<!-- مودال إدخال كلمة السر مع رسالة النجاح داخله -->
 <div id="passwordModal" class="modal">
     <div class="modal-content">
         <h3><i class="fas fa-lock"></i> أدخل كلمة السر</h3>
         <input type="password" id="passwordInput" placeholder="كلمة السر">
+        <div id="modalMessage" class="modal-success"></div>
         <div>
             <button id="submitPasswordBtn">تأكيد</button>
             <button id="closeModalBtn">إلغاء</button>
@@ -1091,7 +1082,7 @@
 </div>
 
 <script>
-    // ========== نظام التنقل بين الصفحات ==========
+    // ========== تعريف الصفحات ==========
     const pages = {
         'main': document.getElementById('page-main'),
         'recommendations': document.getElementById('page-recommendations'),
@@ -1099,31 +1090,42 @@
         'payment': document.getElementById('page-payment')
     };
 
-    // خريطة تحويل go:xxxx إلى اسم الصفحة (ما عدا walid3 الذي يعالج بشكل خاص)
-    const goToPage = {
-        'walidq': 'recommendations',
-        'walidw': null,
-        'walide': null,
-        'walidr': null,
-        'walidt': null,
-        'walidy': null,
-        'walidu': null,
-        'walid4': 'payment'
-    };
+    // ========== نظام history management ==========
+    let currentPageId = 'main';
+    let historyStack = ['main'];
 
-    function showPage(pageId) {
+    // دالة لعرض صفحة معينة (مع إضافة history أو بدون)
+    function showPage(pageId, addToHistory = true) {
+        // إخفاء الكل
         for (let key in pages) {
             if (pages[key]) pages[key].classList.remove('active-page');
         }
         if (pages[pageId]) {
             pages[pageId].classList.add('active-page');
+            if (addToHistory && pageId !== currentPageId) {
+                history.pushState({ pageId: pageId }, '', `#${pageId}`);
+                historyStack.push(pageId);
+                currentPageId = pageId;
+            } else if (!addToHistory) {
+                currentPageId = pageId;
+            }
         } else {
             alert('هذه الصفحة قيد الإعداد');
         }
     }
 
-    // ========== نظام حماية الصفحة المحمية باستخدام localStorage ==========
-    const PROTECTED_PAGE_ID = 'protected';
+    // الاستماع لزر الرجوع
+    window.addEventListener('popstate', function(event) {
+        const state = event.state;
+        if (state && state.pageId && pages[state.pageId]) {
+            showPage(state.pageId, false);
+        } else {
+            // إذا لم توجد حالة صالحة، نذهب للرئيسية
+            showPage('main', false);
+        }
+    });
+
+    // ========== نظام الحماية ==========
     const PASSWORD = 'TKBAMK8gPsZnVnW';
     const STORAGE_KEY = 'trading_access_granted';
 
@@ -1135,49 +1137,45 @@
         localStorage.setItem(STORAGE_KEY, 'true');
     }
 
-    function showToast(message) {
-        const toast = document.createElement('div');
-        toast.className = 'toast-success';
-        toast.innerText = message;
-        document.body.appendChild(toast);
-        setTimeout(() => { toast.remove(); }, 3000);
-    }
-
-    function openProtectedPage() {
-        if (isAccessGranted()) {
-            showPage(PROTECTED_PAGE_ID);
-        } else {
-            showPasswordModal();
-        }
-    }
-
-    // المودال
+    // عناصر المودال
     const modal = document.getElementById('passwordModal');
     const passwordInput = document.getElementById('passwordInput');
     const submitBtn = document.getElementById('submitPasswordBtn');
     const closeModalBtn = document.getElementById('closeModalBtn');
     const modalError = document.getElementById('modalError');
+    const modalMessage = document.getElementById('modalMessage');
 
     function showPasswordModal() {
         passwordInput.value = '';
         modalError.innerText = '';
+        modalMessage.innerText = '';
         modal.style.display = 'flex';
         passwordInput.focus();
     }
 
     function hideModal() {
         modal.style.display = 'none';
+        modalMessage.innerText = '';
+    }
+
+    function showSuccessAndOpenProtected() {
+        // عرض رسالة النجاح داخل المودال
+        modalMessage.innerText = '✅ تم الاشتراك بنجاح يمكنك الحصول على توصيات للتداول الفوري الان';
+        // تعطيل زر التأكيد مؤقتًا
+        submitBtn.disabled = true;
+        setTimeout(() => {
+            hideModal();
+            submitBtn.disabled = false;
+            // فتح الصفحة المحمية وإضافتها للسجل
+            showPage('protected', true);
+        }, 2000);
     }
 
     function checkPasswordAndProceed() {
         const entered = passwordInput.value;
         if (entered === PASSWORD) {
             grantAccess();
-            hideModal();
-            showToast('تم الاشتراك بنجاح يمكنك الحصول على توصيات للتداول الفوري الان');
-            setTimeout(() => {
-                showPage(PROTECTED_PAGE_ID);
-            }, 3000);
+            showSuccessAndOpenProtected();
         } else {
             modalError.innerText = 'كلمة السر غير صحيحة. حاول مرة أخرى.';
             passwordInput.value = '';
@@ -1187,38 +1185,41 @@
 
     submitBtn.addEventListener('click', checkPasswordAndProceed);
     closeModalBtn.addEventListener('click', hideModal);
-    window.addEventListener('click', (e) => {
-        if (e.target === modal) hideModal();
-    });
-    passwordInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') checkPasswordAndProceed();
-    });
+    window.addEventListener('click', (e) => { if (e.target === modal) hideModal(); });
+    passwordInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') checkPasswordAndProceed(); });
 
-    // ========== التعامل مع جميع الروابط go:xxxx ==========
+    // ========== فتح الصفحة المحمية مع التحقق ==========
+    function openProtectedPage() {
+        if (isAccessGranted()) {
+            showPage('protected', true);
+        } else {
+            showPasswordModal();
+        }
+    }
+
+    // ========== ربط جميع الروابط go:xxxx ==========
+    function handleGoLink(goValue) {
+        if (goValue === 'walid3') {
+            openProtectedPage();
+        } else if (goValue === 'walid4') {
+            showPage('payment', true);
+        } else if (goValue === 'walidq') {
+            showPage('recommendations', true);
+        } else {
+            alert('سيتم إضافة هذه الصفحة قريبًا');
+        }
+    }
+
     document.querySelectorAll('a[href^="go:"]').forEach(link => {
         const goValue = link.getAttribute('href').substring(3);
         link.addEventListener('click', function(e) {
             e.preventDefault();
-            if (goValue === 'walid3') {
-                // زر توصيات التداول يفتح الصفحة المحمية بعد التحقق من كلمة السر (مرة واحدة فقط)
-                openProtectedPage();
-            } else if (goValue === 'walid4') {
-                const targetPage = goToPage[goValue];
-                if (targetPage && pages[targetPage]) showPage(targetPage);
-                else alert('سيتم إضافة هذه الصفحة قريبًا');
-            } else {
-                const targetPage = goToPage[goValue];
-                if (targetPage && pages[targetPage]) {
-                    showPage(targetPage);
-                } else {
-                    alert('سيتم إضافة هذه الصفحة قريبًا');
-                }
-            }
+            handleGoLink(goValue);
         });
         link.style.cursor = 'pointer';
     });
 
-    // ========== تشغيل الفيديو في صفحات التوصيات ==========
+    // ========== تشغيل الفيديو ==========
     function setupVideo(wrapperId, thumbId) {
         const wrapper = document.getElementById(wrapperId);
         const thumbnail = document.getElementById(thumbId);
@@ -1261,20 +1262,27 @@
 
     // ========== دالة النسخ لصفحة الدفع ==========
     window.copyToClipboard = function(elementId, button) {
-        var copyText = document.getElementById(elementId);
-        var textToCopy = copyText.innerText;
-        navigator.clipboard.writeText(textToCopy).then(function() {
-            var originalText = button.innerHTML;
+        const copyText = document.getElementById(elementId);
+        const textToCopy = copyText.innerText;
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            const originalText = button.innerHTML;
             button.innerHTML = '<i class="fas fa-check"></i> تم النسخ';
             button.classList.add('copied');
-            setTimeout(function() {
+            setTimeout(() => {
                 button.innerHTML = originalText;
                 button.classList.remove('copied');
             }, 2000);
-        }).catch(function(err) {
-            alert('فشل النسخ، يرجى المحاولة مرة أخرى');
-        });
+        }).catch(() => alert('فشل النسخ، يرجى المحاولة مرة أخرى'));
     };
+
+    // إضافة الحالة الأولية للسجل (الصفحة الرئيسية)
+    if (!window.location.hash || window.location.hash === '#') {
+        history.replaceState({ pageId: 'main' }, '', '#main');
+    } else {
+        // إذا كان هناك هاش في الرابط نحاول فتح الصفحة المناسبة
+        const hashPage = window.location.hash.substring(1);
+        if (pages[hashPage]) showPage(hashPage, false);
+    }
 </script>
 </body>
 </html>
