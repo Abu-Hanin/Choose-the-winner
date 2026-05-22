@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>كورسات التعلم والتداول الفوري</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: #0c0e14;
+            color: #eaecf0;
+            line-height: 1.6;
+            padding: 0;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(246, 189, 55, 0.1) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(246, 189, 55, 0.1) 0%, transparent 20%);
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #1c1f2a 0%, #0c0e14 100%);
+            color: #f0b90b;
+            padding: 20px 0;
+            text-align: center;
+            margin-bottom: 30px;
+            border-radius: 8px;
+            border: 1px solid #2b3139;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            color: #f0b90b;
+        }
+        
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+            color: #eaecf0;
+        }
+        
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        
+        .video-card {
+            background: #1c1f2a;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            border: 1px solid #2b3139;
+        }
+        
+        .video-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(240, 185, 11, 0.15);
+            border-color: #f0b90b;
+        }
+        
+        .video-thumb {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+        }
+        
+        .video-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+        
+        .video-card:hover .video-thumb img {
+            transform: scale(1.05);
+        }
+        
+        .video-info {
+            padding: 16px;
+        }
+        
+        .video-info h2 {
+            color: #f0b90b;
+            margin-bottom: 12px;
+            font-size: 1.3rem;
+            min-height: 60px;
+        }
+        
+        .video-info p {
+            color: #b7bdc6;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .video-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(12, 14, 20, 0.95);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .video-modal.active {
+            display: flex;
+            opacity: 1;
+        }
+        
+        .modal-content {
+            width: 90%;
+            max-width: 900px;
+            background: #1c1f2a;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid #2b3139;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: #f0b90b;
+            font-size: 30px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            z-index: 1001;
+            transition: color 0.2s;
+        }
+        
+        .close-btn:hover {
+            color: #f8d33a;
+        }
+        
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+        }
+        
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .modal-title {
+            color: #f0b90b;
+            padding: 16px;
+            font-size: 1.3rem;
+            text-align: center;
+            background: rgba(28, 31, 42, 0.95);
+            border-bottom: 1px solid #2b3139;
+        }
+        
+        @media (max-width: 768px) {
+            .video-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            header h1 {
+                font-size: 2rem;
+            }
+            
+            header p {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>كورسات التعلم والتداول الفوري</h1>
+            <p>شاهد وتعلم من أفضل الفيديوهات التعليمية في مجال التداول الفوري</p>
+        </header>
+        
+        <div class="video-grid" id="video-grid">
+            <!-- سيتم إضافة الفيديوهات هنا عبر JavaScript -->
+        </div>
+        
+        <div class="video-modal" id="video-modal">
+            <div class="modal-content">
+                <button class="close-btn" id="close-modal">×</button>
+                <div class="modal-title" id="modal-title">عنوان الفيديو</div>
+                <div class="video-container">
+                    <iframe id="youtube-player" width="1920" height="1080" src="" frameborder="0" allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // بيانات الفيديوهات
+        const videos = [
+            {
+                title: "فيديو لتعلم استخدام التوصيات داخل الابلكيشن Blo Trade 24 خطوه بخطوه",
+                desc: "تعلم كيفية استخدام التوصيات داخل تطبيق Blo Trade 24 خطوة بخطوة للمبتدئين والمحترفين",
+                url: "https://www.youtube.com/embed/hs38BPqtceg",
+                id: "hs38BPqtceg",
+                thumb: "https://img.youtube.com/vi/hs38BPqtceg/maxresdefault.jpg"
+            },
+            {
+                title: "كورس التعلم والتداول الفوري - الأساسيات والمفاهيم الأساسية",
+                desc: "تعلم أساسيات التداول الفوري من الصفر إلى الاحتراف",
+                url: "https://www.youtube.com/embed/vliTJ2wDtUo",
+                id: "vliTJ2wDtUo",
+                thumb: "https://img.youtube.com/vi/vliTJ2wDtUo/maxresdefault.jpg"
+            },
+            {
+                title: "كورس التعلم والتداول الفوري - الاستراتيجيات المتقدمة والناجحة",
+                desc: "استراتيجيات متقدمة لتحسين نتائج التداول الفوري وتحقيق الأرباح",
+                url: "https://www.youtube.com/embed/O8BpO8EqW5A",
+                id: "O8BpO8EqW5A",
+                thumb: "https://img.youtube.com/vi/O8BpO8EqW5A/maxresdefault.jpg"
+            }
+        ];
+
+        // عناصر DOM
+        const videoGrid = document.getElementById('video-grid');
+        const videoModal = document.getElementById('video-modal');
+        const youtubePlayer = document.getElementById('youtube-player');
+        const modalTitle = document.getElementById('modal-title');
+        const closeModal = document.getElementById('close-modal');
+
+        // إنشاء بطاقات الفيديوهات
+        function createVideoCards() {
+            videos.forEach((video, index) => {
+                const card = document.createElement('div');
+                card.className = 'video-card';
+                card.innerHTML = `
+                    <div class="video-thumb">
+                        <img src="${video.thumb}" alt="${video.title}" onclick="openVideoModal(${index})">
+                    </div>
+                    <div class="video-info">
+                        <h2>${video.title}</h2>
+                        <p>${video.desc}</p>
+                    </div>
+                `;
+                
+                videoGrid.appendChild(card);
+            });
+        }
+
+        // فتح مشغل الفيديو
+        function openVideoModal(videoId) {
+            const video = videos[videoId];
+            youtubePlayer.src = video.url;
+            modalTitle.textContent = video.title;
+            videoModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // إغلاق مشغل الفيديو
+        function closeVideoModal() {
+            videoModal.classList.remove('active');
+            youtubePlayer.src = '';
+            document.body.style.overflow = 'auto';
+        }
+
+        // إغلاق المشغل عند النقر خارج المحتوى
+        videoModal.addEventListener('click', (e) => {
+            if (e.target === videoModal) {
+                closeVideoModal();
+            }
+        });
+
+        // إغلاق المشغل عند الضغط على زر الإغلاق
+        closeModal.addEventListener('click', closeVideoModal);
+
+        // إغلاق المشغل عند الضغط على مفتاح Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && videoModal.classList.contains('active')) {
+                closeVideoModal();
+            }
+        });
+
+        // تهيئة الصفحة
+        function init() {
+            createVideoCards();
+        }
+
+        // تشغيل التهيئة عند تحميل الصفحة
+        window.onload = init;
+    </script>
+</body>
+</html>
