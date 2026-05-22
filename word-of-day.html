@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>كلمة اليوم بينانس</title>
+    <!-- خط عربي حديث -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #0b0e11;
+            font-family: 'Cairo', sans-serif;
+            color: #eaecef;
+            line-height: 1.6;
+            padding: 16px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* البطاقات */
+        .card {
+            background: #1e2329;
+            border-radius: 32px;
+            padding: 26px 22px;
+            margin-bottom: 22px;
+            border: 1px solid #2b3139;
+            box-shadow: 0 25px 40px -12px rgba(0, 0, 0, 0.7);
+            transition: all 0.25s ease;
+        }
+
+        .card:hover {
+            border-color: #f0b90b80;
+            box-shadow: 0 30px 45px -10px #000000cc;
+        }
+
+        /* العنوان الرئيسي */
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #f0b90b;
+            text-align: center;
+            margin: 0 0 8px 0;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 8px rgba(240, 185, 11, 0.3);
+        }
+
+        .subhead {
+            text-align: center;
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: #b7bdc6;
+            margin-bottom: 22px;
+            padding-bottom: 14px;
+            border-bottom: 1px dashed #2b3139;
+        }
+
+        /* حاوية الفيديو (صورة مصغرة قابلة للنقر) */
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 20px 30px -5px #000000;
+            border: 2px solid #2f353b;
+            background: #000;
+            cursor: pointer;
+        }
+
+        .video-thumbnail {
+            width: 100%;
+            aspect-ratio: 16/9;
+            display: block;
+            object-fit: cover;
+        }
+
+        .play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            border: 2px solid #f0b90b;
+            transition: 0.2s;
+        }
+
+        .video-wrapper:hover .play-button {
+            background-color: #f0b90b;
+            color: #000;
+        }
+
+        .video-wrapper iframe {
+            width: 100%;
+            aspect-ratio: 16/9;
+            display: block;
+            border: none;
+        }
+
+        /* قسم النبذة */
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .section-title .bar {
+            width: 6px;
+            height: 32px;
+            background: #f0b90b;
+            border-radius: 6px;
+        }
+
+        .section-title h2 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: #f0b90b;
+        }
+
+        .expandable-section {
+            background: #13181d;
+            border-radius: 28px;
+            padding: 22px;
+            margin: 18px 0 0;
+            border: 1px solid #2f353b;
+            transition: 0.2s;
+        }
+
+        .expandable-section:hover {
+            border-color: #3d454d;
+        }
+
+        /* النص المختصر */
+        .short-text {
+            font-size: 1.1rem;
+            color: #d0d5dd;
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+
+        .short-text .highlight {
+            color: #f0b90b;
+            font-weight: 700;
+            background: rgba(240, 185, 11, 0.1);
+            padding: 0 6px;
+            border-radius: 8px;
+        }
+
+        /* النص الكامل (مخفي افتراضياً) */
+        .full-text {
+            display: none;
+            font-size: 1.1rem;
+            color: #cfd6e0;
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+
+        .full-text.show {
+            display: block;
+        }
+
+        .full-text p {
+            margin-bottom: 14px;
+        }
+
+        .full-text strong {
+            color: #f0b90b;
+        }
+
+        /* زر عرض/إخفاء التفاصيل */
+        .details-btn {
+            background: transparent;
+            border: 2px solid #f0b90b;
+            color: #f0b90b;
+            font-weight: 700;
+            font-size: 1.1rem;
+            padding: 12px 24px;
+            border-radius: 50px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.2s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .details-btn:hover {
+            background: #f0b90b;
+            color: #0b0e11;
+        }
+
+        /* زر كلمة اليوم (الأول) */
+        .primary-btn {
+            display: block;
+            width: 100%;
+            background: #f0b90b;
+            border: 2px solid #f0b90b;
+            border-radius: 70px;
+            padding: 20px 16px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 800;
+            font-size: 2rem;
+            color: #0b0e11;
+            text-align: center;
+            text-decoration: none;
+            box-shadow: 0 15px 30px rgba(240, 185, 11, 0.4);
+            transition: 0.2s;
+            margin: 30px 0 15px;
+            letter-spacing: 1px;
+        }
+
+        .primary-btn:hover {
+            background: #ffd83d;
+            transform: scale(1.02);
+            border-color: #ffffff;
+            box-shadow: 0 20px 35px rgba(240, 185, 11, 0.6);
+        }
+
+        .primary-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* زر الاشتراك الثاني (walid2) */
+        .walid2-btn {
+            display: block;
+            width: 100%;
+            background: #25D366;
+            border: 2px solid #25D366;
+            border-radius: 70px;
+            padding: 18px 16px;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700;
+            font-size: 1.8rem;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            box-shadow: 0 15px 30px rgba(37, 211, 102, 0.3);
+            transition: 0.2s;
+            margin: 10px 0 20px;
+            letter-spacing: 0.5px;
+        }
+
+        .walid2-btn:hover {
+            background: #20b859;
+            transform: scale(1.02);
+            border-color: #ffffff;
+            box-shadow: 0 20px 35px rgba(37, 211, 102, 0.5);
+        }
+
+        .walid2-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* تذييل */
+        .footer-note {
+            text-align: center;
+            color: #848e9c;
+            font-size: 0.9rem;
+            padding: 20px 0 5px;
+        }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 2.2rem; }
+            .subhead { font-size: 1.1rem; }
+            .primary-btn { font-size: 1.8rem; padding: 18px; }
+            .walid2-btn { font-size: 1.6rem; padding: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- العنوان الرئيسي -->
+        <h1>كلمه اليوم بينانس</h1>
+        <div class="subhead">نقدم لكم كلمه اليوم على باينانس لربح عملات مجاني</div>
+
+        <!-- بطاقة الفيديو - صورة مصغرة قابلة للنقر لتشغيل الفيديو -->
+        <div class="card" style="padding: 20px;">
+            <div class="video-wrapper" id="videoWrapper" onclick="playVideo()">
+                <img src="https://img.youtube.com/vi/7W2TfjaU7EQ/hqdefault.jpg" alt="فيديو شرح كلمة اليوم" class="video-thumbnail">
+                <div class="play-button">▶</div>
+            </div>
+        </div>
+
+        <!-- زر منفصل تحت الفيديو -->
+        <div class="card" style="padding: 16px 20px;">
+            <a href="word-details.html" class="primary-btn" style="margin: 0;">كلمة اليوم</a>
+        </div>
+
+        <!-- قسم النبذة (القابلة للتوسيع) -->
+        <div class="card">
+            <div class="section-title">
+                <div class="bar"></div>
+                <h2>نبذة عن كلمة اليوم</h2>
+            </div>
+
+            <div class="expandable-section">
+                <!-- النص المختصر (أول سطرين) -->
+                <div class="short-text" id="shortText">
+                    <span class="highlight">كلمة اليوم (Crypto WODL)</span> على باينانس هي لعبة تخمين كلمة إنجليزي يومية حسب موضوع معين. عندك عدد محاولات محدود، وكل محاولة بتظهر ألوان:<br>
+                    <span style="color:#2ecc71;">الأخضر</span> = حرف صح في مكانه، 
+                    <span style="color:#f1c40f;">الأصفر</span> = حرف صح بس في مكان غلط، 
+                    <span style="color:#7f8c8d;">الرمادي</span> = الحرف مش موجود...
+                </div>
+
+                <!-- النص الكامل (مخفي) -->
+                <div class="full-text" id="fullText">
+                    <p><strong>🔹 كلمة اليوم (Crypto WODL)</strong> على باينانس هي لعبة تخمين كلمة إنجليزي يومية حسب موضوع معين. عندك عدد محاولات محدود، وكل محاولة بتظهر ألوان:
+                    <span style="color:#2ecc71;">الأخضر</span> = حرف صح في مكانه، 
+                    <span style="color:#f1c40f;">الأصفر</span> = حرف صح بس في مكان غلط، 
+                    <span style="color:#7f8c8d;">الرمادي</span> = الحرف مش موجود.</p>
+                    <p>🔸 لو حليت الكلمة صح خلال فترة الحدث، بتدخل في توزيع جوائز (Airdrop) وبتاخد توكنات مجانية حسب شروط الحملة. الأرباح مش فورية ولا مضمونة، لكنها فرصة تجمع عملات بدون استثمار، وكل يوم في كلمة جديدة وفرصة جديدة للمشاركة.</p>
+                    <p>🔸 ولو اشتركت في خدمة كلمة اليوم داخل التطبيق، هيوصلك حل كلمة اليوم بشكل يومي مباشرة داخل التطبيق علشان توفر وقتك وتزود فرصتك في الفوز.<br>💰 <strong style="color:#f0b90b;">سعر الاشتراك 2.5 دولار فقط.</strong> تقدر تشترك بسهولة من خلال الزرار الموجود أسفل الصفحة داخل التطبيق.</p>
+                </div>
+
+                <!-- زر عرض/إخفاء التفاصيل -->
+                <button class="details-btn" id="toggleBtn" onclick="toggleDetails()">
+                    <span id="btnText">عرض التفاصيل</span>
+                    <span id="btnIcon">▼</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- الزر الأول: كلمة اليوم -->
+        <a href="word-details.html" class="primary-btn">كلمة اليوم</a>
+
+        <!-- الزر الثاني: اشترك الان -->
+        <a href="subscribe-word.html" class="walid2-btn">اشترك الان 🚀</a>
+
+        <!-- تذييل محدث -->
+        <div class="footer-note">
+            * الضغط على زر اشترك الان يحولك إلى صفحة الاشتراك داخل التطبيق
+        </div>
+    </div>
+
+    <!-- جافاسكريبت لتشغيل الفيديو عند النقر على الصورة وللتبديل بين النصوص -->
+    <script>
+        function playVideo() {
+            const wrapper = document.getElementById('videoWrapper');
+            wrapper.innerHTML = '<iframe src="https://www.youtube.com/embed/7W2TfjaU7EQ?autoplay=1&mute=1&playsinline=1&rel=0&controls=1&modestbranding=1" title="شرح الربح من كلمة اليوم على باينانس" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>';
+        }
+
+        function toggleDetails() {
+            const fullText = document.getElementById('fullText');
+            const shortText = document.getElementById('shortText');
+            const btnText = document.getElementById('btnText');
+            const btnIcon = document.getElementById('btnIcon');
+
+            if (fullText.classList.contains('show')) {
+                fullText.classList.remove('show');
+                shortText.style.display = 'block';
+                btnText.innerText = 'عرض التفاصيل';
+                btnIcon.innerText = '▼';
+            } else {
+                fullText.classList.add('show');
+                shortText.style.display = 'none';
+                btnText.innerText = 'إخفاء التفاصيل';
+                btnIcon.innerText = '▲';
+            }
+        }
+
+        // التأكد من الحالة الأولية
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('fullText').classList.remove('show');
+            document.getElementById('shortText').style.display = 'block';
+        });
+    </script>
+</body>
+</html>
