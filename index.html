@@ -126,8 +126,8 @@
             }
         })();
     </script>
-    <!-- إضافة تسجيل Service Worker -->
     <script>
+        // تسجيل Service Worker
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js', { scope: './' })
                 .then(reg => console.log('✅ Service Worker registered:', reg))
