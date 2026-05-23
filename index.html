@@ -2,8 +2,16 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>تطبيق التداول الفوري - واجهة رئيسية</title>
+    <!-- ربط تطبيق PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#F0B90B">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Blo Trade 24">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
     <!-- خط جوجل Inter (يدعم العربية) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -51,7 +59,7 @@
 
         .header {
             text-align: center;
-            margin-bottom: 50px;
+            margin-bottom: 30px;
         }
 
         .header h1 {
@@ -75,6 +83,59 @@
             font-weight: 400;
         }
 
+        /* زر تثبيت التطبيق */
+        .install-btn-wrapper {
+            text-align: center;
+            margin: 20px auto 30px;
+        }
+        .btn-install {
+            background: linear-gradient(145deg, #F0B90B, #F8D12F);
+            border: none;
+            border-radius: 60px;
+            padding: 14px 32px;
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #0B0E11;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 8px 20px rgba(240, 185, 11, 0.3);
+        }
+        .btn-install:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(240, 185, 11, 0.5);
+            background: #F8D12F;
+        }
+        .btn-install i {
+            font-size: 1.3rem;
+        }
+
+        /* رسالة iOS */
+        .ios-guide {
+            background: #1E2329;
+            border-radius: 20px;
+            padding: 12px 20px;
+            margin: 15px auto 0;
+            max-width: 500px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid #2b3139;
+            color: #b7bdc6;
+            font-size: 0.9rem;
+            justify-content: center;
+        }
+        .ios-guide i {
+            font-size: 1.8rem;
+            color: #F0B90B;
+        }
+        .ios-guide.show {
+            display: flex;
+        }
+
+        /* باقي الأنماط كما هي */
         .icons-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -121,6 +182,27 @@
             line-height: 1.4;
         }
 
+        /* توست الإشعار */
+        .toast-notify {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #F0B90B;
+            color: #0B0E11;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: bold;
+            z-index: 1000;
+            opacity: 0;
+            transition: 0.3s;
+            white-space: nowrap;
+        }
+        .toast-notify.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
         @media (max-width: 600px) {
             .site-title h2 {
                 font-size: 2rem;
@@ -142,6 +224,15 @@
             .icon-card i {
                 font-size: 2.8rem;
             }
+            .btn-install {
+                padding: 10px 22px;
+                font-size: 1rem;
+            }
+            .toast-notify {
+                white-space: normal;
+                width: 90%;
+                text-align: center;
+            }
         }
     </style>
 </head>
@@ -156,6 +247,19 @@
         <div class="header">
             <h1>التداول الفوري العملات الرقمية المشفرة</h1>
             <p>نقدم لكم توصيات لتداول الفوري للعملات المشفرة احترافية بشكل يومي، والتوصيات مدروسة من قبل الخبراء في التداول.</p>
+        </div>
+
+        <!-- زر تثبيت التطبيق أسفل النص مباشرة -->
+        <div class="install-btn-wrapper">
+            <button id="installAppBtn" class="btn-install">
+                <i class="fas fa-download"></i> تثبيت التطبيق
+            </button>
+        </div>
+
+        <!-- رسالة توجيهية لمستخدمي iOS -->
+        <div id="iosGuideMsg" class="ios-guide">
+            <i class="fab fa-apple"></i>
+            <span>لتثبيت التطبيق على iPhone/iPad: اضغط <i class="fas fa-share-alt"></i> ثم "إضافة إلى الشاشة الرئيسية" ➕.</span>
         </div>
 
         <!-- شبكة الأيقونات - كل بطاقة تفتح صفحة داخلية منفصلة -->
@@ -197,6 +301,71 @@
             </a>
         </div>
     </div>
+
+    <div id="installToast" class="toast-notify">✨ تم تثبيت التطبيق! يمكنك فتحه من الشاشة الرئيسية.</div>
+
+    <script>
+        (function() {
+            let deferredPrompt = null;
+            const installBtn = document.getElementById('installAppBtn');
+            const iosMsg = document.getElementById('iosGuideMsg');
+            const toastEl = document.getElementById('installToast');
+
+            // التحقق من وضع التطبيق المستقل
+            const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+            if (isStandalone()) {
+                if (installBtn) installBtn.style.display = 'none';
+                if (iosMsg) iosMsg.classList.remove('show');
+                return;
+            }
+
+            // كشف iOS
+            const isIOS = /iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+            if (isIOS) {
+                if (installBtn) installBtn.style.display = 'none';
+                if (iosMsg) iosMsg.classList.add('show');
+                setTimeout(() => {
+                    showToast("💡 يمكنك إضافة التطبيق إلى الشاشة الرئيسية لمشاهدة أفضل.", 5000);
+                }, 1000);
+            } else {
+                if (iosMsg) iosMsg.classList.remove('show');
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    e.preventDefault();
+                    deferredPrompt = e;
+                    if (installBtn) installBtn.style.display = 'inline-flex';
+                });
+                window.addEventListener('appinstalled', () => {
+                    deferredPrompt = null;
+                    if (installBtn) installBtn.style.display = 'none';
+                    showToast("✅ تم تثبيت التطبيق بنجاح! ✅");
+                });
+            }
+
+            function showToast(msg, duration = 4000) {
+                if (!toastEl) return;
+                toastEl.textContent = msg;
+                toastEl.classList.add('show');
+                setTimeout(() => toastEl.classList.remove('show'), duration);
+            }
+
+            if (installBtn) {
+                installBtn.addEventListener('click', async () => {
+                    if (!deferredPrompt) {
+                        showToast("⚠️ التثبيت غير متاح حالياً. حاول مرة أخرى لاحقاً.", 4000);
+                        return;
+                    }
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') {
+                        showToast("🎉 شكراً لتثبيت التطبيق! 🎉");
+                    } else {
+                        showToast("يمكنك تثبيت التطبيق لاحقاً من قائمة المتصفح.");
+                    }
+                    deferredPrompt = null;
+                    installBtn.style.display = 'none';
+                });
+            }
+        })();
+    </script>
 </body>
 </html>
-
